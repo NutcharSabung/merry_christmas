@@ -1,26 +1,27 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ดึง Element จาก HTML
     const triggerOverlay = document.getElementById('triggerOverlay');
     const startButton = document.getElementById('startButton');
     const loadingBar = document.getElementById('loadingBar');
     const statusText = document.getElementById('statusText');
+
     const ambientLight = document.getElementById('ambientLight');
     const roseWrapper = document.getElementById('roseWrapper');
     const roseHead = document.getElementById('roseHead');
     const calyx = document.getElementById('calyx');
+
     const stem = document.getElementById('stem');
     const leafLeft = document.getElementById('leafLeft');
     const leafRight = document.getElementById('leafRight');
+
     const endText = document.getElementById('endText');
     const fallingPetalsEl = document.getElementById('fallingPetals');
-    const scene = document.querySelector('.scene');
 
-    const music = document.getElementById("backgroundMusic");
+    // เพลง Background
+    const music = document.getElementById('backgroundMusic');
 
-    document.querySelector("TAP TO BLOOM").addEventListener("click", () => {
-    music.play();
-    });
-
+    // ข้อมูลกลีบกุหลาบ
     const PETAL_LAYERS = [
         { count: 4, w: 24, h: 46, curl: 78, delayBase: 0, tz: 2, cls: 'petal-bud' },
         { count: 5, w: 34, h: 58, curl: 65, delayBase: 0.25, tz: 9, cls: 'petal-core' },
@@ -28,23 +29,31 @@ document.addEventListener('DOMContentLoaded', () => {
         { count: 7, w: 58, h: 88, curl: 22, delayBase: 0.90, tz: 30, cls: 'petal-mid-inner' },
         { count: 8, w: 72, h: 104, curl: -5, delayBase: 1.30, tz: 44, cls: 'petal-mid' },
         { count: 9, w: 86, h: 118, curl: -25, delayBase: 1.75, tz: 60, cls: 'petal-outer' },
-        { count: 10, w: 98, h: 130, curl: -48, delayBase: 2.25, tz: 76, cls: 'petal-blush' },
+        { count: 10, w: 98, h: 130, curl: -48, delayBase: 2.25, tz: 76, cls: 'petal-blush' }
     ];
 
     const SEPALS_COUNT = 5;
 
+    // สีของกลีบดอกไม้ที่ร่วง
     const FALLING_PETAL_COLORS = [
         ['#7b009a', '#27003d'],
         ['#7a0085', '#26002b'],
         ['#9e00ad', '#340048'],
-        ['#af00bf', '#260052'],
+        ['#af00bf', '#260052']
     ];
 
     let fallingPetalInterval = null;
+    let hasStarted = false;
 
+
+    // =====================================
+    // ระบบ Loading
+    // =====================================
 
     function startCardLoader() {
+
         const duration = 2400;
+
         const steps = [
             { threshold: 20, text: 'The Rose For Christmas...' },
             { threshold: 50, text: 'Growing digital petals...' },
@@ -56,18 +65,34 @@ document.addEventListener('DOMContentLoaded', () => {
         let startTimestamp = null;
 
         function animateLoader(timestamp) {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+            if (!startTimestamp) {
+                startTimestamp = timestamp;
+            }
+
+            const progress = Math.min(
+                (timestamp - startTimestamp) / duration,
+                1
+            );
+
             const percent = Math.floor(progress * 100);
 
             loadingBar.style.width = `${percent}%`;
-            const activeStep = steps.find(s => percent <= s.threshold) || steps[steps.length - 1];
+
+            const activeStep =
+                steps.find(s => percent <= s.threshold) ||
+                steps[steps.length - 1];
+
             statusText.textContent = activeStep.text;
 
             if (progress < 1) {
+
                 requestAnimationFrame(animateLoader);
+
             } else {
+
                 startButton.removeAttribute('disabled');
+
             }
         }
 
@@ -75,53 +100,118 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    // =====================================
+    // สร้างกลีบเลี้ยงดอกกุหลาบ
+    // =====================================
+
     function createSepals() {
+
         const step = 360 / SEPALS_COUNT;
+
         for (let i = 0; i < SEPALS_COUNT; i++) {
+
             const sepal = document.createElement('div');
+
             sepal.className = 'sepal';
-            const angle = i * step + (Math.random() - 0.5) * 5;
+
+            const angle =
+                i * step + (Math.random() - 0.5) * 5;
+
             const delay = 0.3 + i * 0.06;
+
             const curl = 18 + Math.random() * 8;
 
-            sepal.style.setProperty('--sepal-angle', `${angle}deg`);
-            sepal.style.setProperty('--sepal-curl', `${curl}deg`);
-            sepal.style.setProperty('--sepal-delay', `${delay}s`);
+            sepal.style.setProperty(
+                '--sepal-angle',
+                `${angle}deg`
+            );
+
+            sepal.style.setProperty(
+                '--sepal-curl',
+                `${curl}deg`
+            );
+
+            sepal.style.setProperty(
+                '--sepal-delay',
+                `${delay}s`
+            );
+
             calyx.appendChild(sepal);
         }
     }
 
+
+    // =====================================
+    // สร้างกลีบดอกกุหลาบ
+    // =====================================
+
     function createPetals() {
+
         PETAL_LAYERS.forEach((layer, li) => {
+
             const angleStep = 360 / layer.count;
-            const layerOffset = li * 24 + (Math.random() - 0.5) * 8;
+
+            const layerOffset =
+                li * 24 + (Math.random() - 0.5) * 8;
 
             for (let i = 0; i < layer.count; i++) {
+
                 const petal = document.createElement('div');
+
                 petal.className = `petal ${layer.cls}`;
 
-                const angle = layerOffset + i * angleStep + (Math.random() - 0.5) * 5;
+                const angle =
+                    layerOffset +
+                    i * angleStep +
+                    (Math.random() - 0.5) * 5;
+
                 const delay = layer.delayBase + i * 0.05;
-                const curlJitter = (Math.random() - 0.5) * 6;
-                const scaleJitter = 0.94 + Math.random() * 0.12;
-                const bloomDur = 2.1 + Math.random() * 0.4;
+
+                const curlJitter =
+                    (Math.random() - 0.5) * 6;
+
+                const scaleJitter =
+                    0.94 + Math.random() * 0.12;
+
+                const bloomDur =
+                    2.1 + Math.random() * 0.4;
 
                 petal.style.width = `${layer.w}px`;
+
                 petal.style.height = `${layer.h}px`;
+
                 petal.style.setProperty('--angle', `${angle}deg`);
-                petal.style.setProperty('--curl', `${layer.curl + curlJitter}deg`);
+
+                petal.style.setProperty(
+                    '--curl',
+                    `${layer.curl + curlJitter}deg`
+                );
+
                 petal.style.setProperty('--scale', scaleJitter);
+
                 petal.style.setProperty('--delay', `${delay}s`);
+
                 petal.style.setProperty('--tz', `${layer.tz}px`);
-                petal.style.setProperty('--bloom-dur', `${bloomDur}s`);
+
+                petal.style.setProperty(
+                    '--bloom-dur',
+                    `${bloomDur}s`
+                );
 
                 roseHead.appendChild(petal);
             }
         });
     }
 
+
+    // =====================================
+    // การเจริญเติบโตของก้านและใบ
+    // =====================================
+
     function growStem() {
+
         return new Promise(resolve => {
+
             stem.classList.add('grow');
 
             setTimeout(() => {
@@ -133,99 +223,228 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1100);
 
             setTimeout(resolve, 2200);
+
         });
     }
 
+
+    // =====================================
+    // การบานของดอกกุหลาบ
+    // =====================================
+
     function bloom() {
+
         calyx.classList.add('visible');
+
         ambientLight.classList.add('visible');
+
         roseHead.classList.add('blooming');
+
     }
 
+
+    // =====================================
+    // สร้างกลีบดอกไม้ที่ร่วง
+    // =====================================
+
     function spawnFallingPetal() {
-        if (fallingPetalsEl.childElementCount > 10) return;
+
+        if (fallingPetalsEl.childElementCount > 10) {
+            return;
+        }
 
         const petal = document.createElement('div');
+
         petal.className = 'falling-petal';
 
         const w = 10 + Math.random() * 12;
+
         const h = w * (1.25 + Math.random() * 0.15);
+
         const x = 20 + Math.random() * 60;
+
         const y = 3 + Math.random() * 10;
+
         const dur = 5.5 + Math.random() * 3.5;
+
         const delay = Math.random() * 0.6;
 
-        const colors = FALLING_PETAL_COLORS[Math.floor(Math.random() * FALLING_PETAL_COLORS.length)];
+        const colors =
+            FALLING_PETAL_COLORS[
+                Math.floor(Math.random() * FALLING_PETAL_COLORS.length)
+            ];
 
-        const sign = () => (Math.random() > 0.5 ? 1 : -1);
+        const sign = () =>
+            Math.random() > 0.5 ? 1 : -1;
+
         const s1 = sign() * (15 + Math.random() * 25);
+
         const s2 = sign() * (10 + Math.random() * 20);
+
         const s3 = sign() * (20 + Math.random() * 30);
+
         const s4 = sign() * (10 + Math.random() * 15);
 
         petal.style.left = `${x}vw`;
+
         petal.style.top = `${y}vh`;
+
         petal.style.setProperty('--fp-w', `${w}px`);
+
         petal.style.setProperty('--fp-h', `${h}px`);
+
         petal.style.setProperty('--fp-c1', colors[0]);
+
         petal.style.setProperty('--fp-c2', colors[1]);
+
         petal.style.setProperty('--f-dur', `${dur}s`);
+
         petal.style.setProperty('--f-delay', `${delay}s`);
+
         petal.style.setProperty('--s1', `${s1}px`);
+
         petal.style.setProperty('--s2', `${s2}px`);
+
         petal.style.setProperty('--s3', `${s3}px`);
+
         petal.style.setProperty('--s4', `${s4}px`);
 
         fallingPetalsEl.appendChild(petal);
 
         setTimeout(() => {
-            if (petal.parentNode) petal.remove();
+
+            if (petal.parentNode) {
+                petal.remove();
+            }
+
         }, (dur + delay) * 1000 + 300);
     }
 
+
+    // =====================================
+    // เริ่มกลีบดอกไม้ร่วง
+    // =====================================
+
     function startFallingPetals() {
+
         for (let i = 0; i < 3; i++) {
-            setTimeout(() => spawnFallingPetal(), i * 300);
+
+            setTimeout(() => {
+                spawnFallingPetal();
+            }, i * 300);
+
         }
 
         fallingPetalInterval = setInterval(() => {
+
             spawnFallingPetal();
+
         }, 2200);
     }
 
 
+    // =====================================
+    // ลำดับแอนิเมชันทั้งหมด
+    // =====================================
+
     async function startAnimationSequence() {
+
         await growStem();
+
         await delay(100);
+
         bloom();
 
         setTimeout(() => {
+
             roseWrapper.classList.add('rotating');
+
         }, 2600);
 
-        setTimeout(() => startFallingPetals(), 3400);
+        setTimeout(() => {
+
+            startFallingPetals();
+
+        }, 3400);
 
         setTimeout(() => {
+
             endText.classList.add('visible');
+
         }, 4600);
     }
 
+
+    // =====================================
+    // ฟังก์ชันหน่วงเวลา
+    // =====================================
+
     function delay(ms) {
+
         return new Promise(resolve => setTimeout(resolve, ms));
+
     }
 
-    startButton.addEventListener('click', () => {
+
+    // =====================================
+    // ปุ่ม TAP TO BLOOM + เพลง
+    // =====================================
+
+    startButton.addEventListener('click', async () => {
+
+        // ป้องกันการกดซ้ำ
+        if (hasStarted) {
+            return;
+        }
+
+        hasStarted = true;
+
+        startButton.disabled = true;
+
+        // เล่นเพลงเมื่อผู้ใช้กดปุ่ม
+        if (music) {
+
+            try {
+
+                music.volume = 0.7;
+
+                await music.play();
+
+            } catch (error) {
+
+                console.warn(
+                    'ไม่สามารถเล่นเพลงได้:',
+                    error
+                );
+
+            }
+        }
+
+        // ซ่อนหน้าเริ่มต้น
         triggerOverlay.classList.add('fade-out');
 
+        // เริ่มแอนิเมชันดอกกุหลาบ
         setTimeout(() => {
+
             startAnimationSequence();
+
         }, 800);
+
     });
+
+
+    // =====================================
+    // เริ่มต้นเว็บไซต์
+    // =====================================
+
     createSepals();
+
     createPetals();
 
     setTimeout(() => {
+
         startCardLoader();
+
     }, 400);
 
 });
