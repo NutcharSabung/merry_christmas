@@ -15,6 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const fallingPetalsEl = document.getElementById('fallingPetals');
     const scene = document.querySelector('.scene');
 
+    const music = document.getElementById("backgroundMusic");
+
+    document.querySelector("TAP TO BLOOM").addEventListener("click", () => {
+    music.play();
+    });
+
     const PETAL_LAYERS = [
         { count: 4, w: 24, h: 46, curl: 78, delayBase: 0, tz: 2, cls: 'petal-bud' },
         { count: 5, w: 34, h: 58, curl: 65, delayBase: 0.25, tz: 9, cls: 'petal-core' },
